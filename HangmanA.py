@@ -1,9 +1,7 @@
-
 import random
 import string
 
 word = []
-
 guessed = [" "]
 letters = ["e","t","a","o","i","n","s","h","r","d","l","u"]
 vowels = ["e","a","o","i","u","y"]
@@ -12,9 +10,9 @@ len = 0
 attempts = 0
 found = False
 
-
-## DO SOMETHING WITH FREQUENCY SO IT GUESSES A MORE LIKELY OPTION FIRST
+## THINGS TO ADD ##
 # PRIORITIZE MOST COMMON WORDS IF I HAVE A SECOND LIST THAT I ONLY LOOK AT IF I RUN OUT
+# VALIDATE INPUT THROUGHOUT
 
 def what_next():
     global dict
@@ -63,89 +61,77 @@ def not_in(x):
             guessed.append(x)
     print(dict.__len__())
 
-def earlyGuess():
-    spinning = 0
-    guess = random.choice(letters)
-    while guess in guessed:
-        if spinning == 5:
-            guess = what_next()
-            while guess in guessed:
-                guess = what_next()
-            return guess
-        else:
-            guess = random.choice(letters)
-            spinning += 1
-    return guess
 
 def spell(wo):
     print(".", end='', flush=True)
     for x in wo:
         print(x+".", end='', flush=True)
 
-def checkPercent():
+
+def check_percent():
     have = 0
     for a in word:
         if a.__len__() == 1:
             have += 1
     return have/len
 
-for line in open("words_alpha.txt"):
-    dict.append(line.rstrip("\n"))
-while len < 4 or len > 9:
-    length = input("How many letters are in the word? It must be between 4 and 9\n")
-    try:
-        len = int(length)
-    except ValueError:
-        print("You needed to enter a number between 4 and 9.\n")
-#print(dict.__len__())
-original_len = dict.__len__()
-for num in range(0,original_len):
-    if dict[original_len-num-1].__len__() != len:
-        dict.pop(original_len-num-1)
 
-#print(dict.__len__())
-print("Let's play!\n")
+def main():
+    print("\nI will have 18 guesses, including correct guesses, to get your word!\n"
+          "For each guess, reply with either '0' (if the letter is not in the word) or"
+          "reply with the spot-numbers. For example, if 'a' is in spots 2 and 4, reply with '24'.\n"
+          "Good luck beating me!")
+    global len
+    global attempts
+    global word
+    global found
+    for line in open("words_alpha.txt"):
+        dict.append(line.rstrip("\n"))
+    while len < 4 or len > 9:
+        length = input("How many letters are in the word? It must be between 4 and 9\n")
+        try:
+            len = int(length)
+        except ValueError:
+            print("You needed to enter a number between 4 and 9.\n")
 
-for a in range(0,len):
-    word.append("."+str(a+1)+".")
+    original_len = dict.__len__()
+    for num in range(0,original_len):
+        if dict[original_len-num-1].__len__() != len:
+            dict.pop(original_len-num-1)
 
-while attempts < 18 and not found:
-    if checkPercent() < .3:
-        e = earlyGuess()
-    else:
+    print("Let's play!\n")
+
+    for a in range(0,len):
+        word.append("."+str(a+1)+".")
+    spell(word)
+    while attempts < 18 and not found:
         e = what_next()
+        print("So far I have...")
+        print("My guess is " + e + "\n\n")
 
-    print("My guess is " + e+"\n\n")
+        ans = input("\n\nEnter either '0' or the appropriatet values (without spaces or line breaks)\n")
 
-## MAKE SURE THEIR ANSWER IS INTS IN RIGHT RANGE
+        if ans == "0":
+            print("\nI guess not... I have guessed " + str(attempts + 1) + " time(s) so far!\n")
+            not_in(e)
+        else:
+            print("\nNice... I have guessed " + str(attempts + 1) + " time(s) so far!\n")
+            for ch in ans:
+                word[int(ch)-1] = e
+            is_in(e,ans)
 
-    print("So far I have...")
-    spell(word)
-    ans = input("\n\nEnter '0' if the letter is not in the word\nOtherwise,"
-              " enter the numbers of spots where it is\n")
+        attempts += 1
+        spell(word)
+        print("\n")
 
-    if ans == "0":
-        print("\nI guess not... I have guessed " + str(attempts + 1) + " time(s) so far!\n")
-        not_in(e)
+        if check_percent() == 1:
+            found = True
+            break
+
+    if not found:
+        print("\n\nYou won... I'm sad now. Thanks a lot.")
     else:
-        print("\nNice... I have guessed " + str(attempts + 1) + " time(s) so far!\n")
-        for ch in ans:
-            word[int(ch)-1] = e
-        is_in(e,ans)
-    attempts += 1
-    spell(word)
-    print("\n")
-    # print(fillIn(word))
+        print("\n\nSorry - I figured it out!")
 
-    if checkPercent() == 1:
-        found = True
-        break
-
-
-
-
-
-if not found:
-    print("\n\nYou won... I'm sad now. Thanks a lot.")
-else:
-    print("\n\nSorry - I figured it out!")
+if __name__ == '__main__':
+    main()
